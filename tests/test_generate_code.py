@@ -29,7 +29,7 @@ from servicex.code_generator_service import create_app
 import io
 import zipfile
 
-from servicex.code_generator_service.ast_translator import GenerateCodeException
+from servicex.code_generator_service.configfile_writer import GenerateCodeException
 
 
 def get_zipfile_data(zip_data: bytes):
@@ -51,32 +51,33 @@ class TestGenerateCode:
     def test_post_good_query(self, mocker):
         """Produce code for a simple good query"""
 
-        mock_ast_translator = mocker.Mock()
-        mock_ast_translator.translate_text_ast_to_zip = mocker.Mock(return_value="hi")
+        mock_config_file_writer = mocker.Mock()
+        mock_config_file_writer.write_configs_to_zip = mocker.Mock(return_value="hi")
 
         config = {
-            'TARGET_BACKEND': 'uproot'
+            "foo": "bar"
         }
-        app = create_app(config, provided_translator=mock_ast_translator)
+
+        app = create_app(config, provided_translator=mock_config_file_writer)
         client = app.test_client()
-        select_stmt = "(call ResultTTree (call Select (call SelectMany (call EventDataset (list 'localds://did_01')"  # noqa: E501
+        select_stmt = "foo=bar; ball=bat"
 
         response = client.post("/servicex/generated-code", data=select_stmt)
         assert response.status_code == 200
-        mock_ast_translator.translate_text_ast_to_zip.assert_called_with(select_stmt)
+        mock_config_file_writer.write_configs_to_zip.assert_called_with(select_stmt)
 
     def test_post_codegen_error_query(self, mocker):
         """Post a query with a code-gen level error"""
-        mock_ast_translator = mocker.Mock()
-        mock_ast_translator.translate_text_ast_to_zip = \
+        mock_config_file_writer = mocker.Mock()
+        mock_config_file_writer.write_configs_to_zip = \
             mocker.Mock(side_effect=GenerateCodeException)
 
         config = {
             'TARGET_BACKEND': 'uproot'
         }
-        app = create_app(config, provided_translator=mock_ast_translator)
+        app = create_app(config, provided_translator=mock_config_file_writer)
         client = app.test_client()
-        select_stmt = "(call ResultTTree (call Select (call SelectMany (call EventDataset (list 'localds://did_01')"  # noqa: E501
+        select_stmt = "foo=bar; ball=baz"
 
         response = client.post("/servicex/generated-code", data=select_stmt)
 

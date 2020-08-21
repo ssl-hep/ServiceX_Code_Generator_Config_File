@@ -29,8 +29,9 @@ import os
 
 from flask import Flask
 from flask_restful import Api
+
+from servicex.code_generator_service.configfile_writer import ConfigFileWriter
 from servicex.code_generator_service.generate_code import GenerateCode
-from servicex.code_generator_service.ast_translator import AstTranslator
 
 
 def handle_invalid_usage(error: BaseException):
@@ -58,7 +59,7 @@ def create_app(test_config=None, provided_translator=None):
     with app.app_context():
 
         if not provided_translator:
-            translator = AstTranslator()
+            translator = ConfigFileWriter()
         else:
             translator = provided_translator
 
