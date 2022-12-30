@@ -50,7 +50,7 @@ jobs:
       id: extract_tag_name
 
     - name: Build Image
-      uses: elgohr/Publish-Docker-Github-Action@master
+      uses: elgohr/Publish-Docker-Github-Action@v5
       with:
         name: sslhep/servicex_code_gen_config_file:${{ steps.extract_tag_name.outputs.imagetag }}
         username: ${{ secrets.DOCKER_USERNAME }}
